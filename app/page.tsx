@@ -1,65 +1,77 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getPosts } from "@/lib/db";
+import type { Post } from "@/types/blog";
+import { formatDate } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const posts: Post[] = await getPosts();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Hero Section */}
+      <div className="max-w-3xl mb-20">
+        <h2 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 text-balance leading-tight">
+          Stories worth your time
+        </h2>
+        <p className="text-xl text-muted-foreground text-balance">
+          Exploring the intersection of technology, culture, and human experience through thoughtful long-form writing.
+        </p>
+      </div>
+
+      {/* Blog Posts Grid */}
+      {posts.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-muted-foreground text-lg mb-6">No posts yet. Be the first to write something!</p>
+          <Link 
+            href="/posts/new"
+            className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-6 py-3 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Create Your First Post
+          </Link>
         </div>
-      </main>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post, index) => (
+            <Link 
+              key={post.id} 
+              href={`/posts/${post.slug}`}
+              className="group"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-accent/50 hover:-translate-y-1">
+                {post.featured_image && (
+                  <div className="aspect-[16/9] overflow-hidden rounded-t-lg">
+                    <img 
+                      src={post.featured_image} 
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <CardHeader>
+                  <div className="text-xs font-medium text-accent mb-2 uppercase tracking-wider">
+                    {formatDate(post.published_at)}
+                  </div>
+                  <CardTitle className="font-serif text-2xl mb-2 group-hover:text-accent transition-colors line-clamp-2">
+                    {post.title}
+                  </CardTitle>
+                  <CardDescription className="text-base line-clamp-3">
+                    {post.summary}
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <div className="text-sm text-muted-foreground">
+                    By {post.author}
+                  </div>
+                </CardFooter>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
