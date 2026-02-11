@@ -27,16 +27,6 @@ export default function CreateBlogForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="slug">Slug</Label>
-        <Input
-          id="slug"
-          name="slug"
-          required
-          placeholder="url-friendly-slug"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="author">Author</Label>
         <Input
           id="author"

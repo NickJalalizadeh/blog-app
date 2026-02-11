@@ -4,16 +4,16 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { generateSlug, getSlugId } from './utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
  
 const FormSchema = z.object({
   id: z.string(),
   title: z.string().min(10, { error: 'The title must be at least 10 characters.' }),
-  slug: z.string().min(10, { error: 'The slug must be at least 10 characters.' }),
   author: z.string().min(4, { error: 'The author must be at least 4 characters.' }),
-  summary: z.string({error: 'Please add a summary'}).nonempty({ error: 'Please enter a summary' }),
-  content: z.string(),
+  summary: z.string(),
+  content: z.string().min(50, { error: 'The post content must be at least 50 characters.' }),
   featured_image: z.string(),
   tags: z.string(),
 });
@@ -24,7 +24,6 @@ const UpdatePost = FormSchema.omit({ id: true });
 export type FormState = {
   errors?: {
     title?: { errors: string[] };
-    slug?: { errors: string[] };
     author?: { errors: string[] };
     summary?: { errors: string[] };
     content?: { errors: string[] };
@@ -37,7 +36,6 @@ export type FormState = {
 export async function createPost(prevState: FormState | undefined, formData: FormData) {
   const validatedFields = CreatePost.safeParse({
     title: formData.get('title'),
-    slug: formData.get('slug'),
     author: formData.get('author'),
     summary: formData.get('summary'),
     content: formData.get('content'),
@@ -52,26 +50,34 @@ export async function createPost(prevState: FormState | undefined, formData: For
     };
   }
 
+  const { title } = validatedFields.data;
+
   const newPost = {
     ...validatedFields.data,
+    title: title.trim(),
+    slug: generateSlug(title),
     published_at: new Date(),
   }
 
+  let post;
   try {
-    await sql`INSERT INTO posts ${sql(newPost)}`;
+    const rows = await sql`
+      INSERT INTO posts ${sql(newPost)}
+      RETURNING id, slug
+    `;
+    post = rows[0];
   } catch(error) {
     console.error(error);
     return { message: 'Database Error: failed to create post.' };
   }
  
-  revalidatePath(`/posts/${newPost.slug}`);
-  redirect(`/posts/${newPost.slug}`);
+  revalidatePath(`/posts/${getSlugId(post.slug, post.id)}`);
+  redirect(`/posts/${getSlugId(post.slug, post.id)}`);
 }
 
 export async function updatePost(id: string, prevState: FormState | undefined, formData: FormData) {
   const validatedFields = UpdatePost.safeParse({
     title: formData.get('title'),
-    slug: formData.get('slug'),
     author: formData.get('author'),
     summary: formData.get('summary'),
     content: formData.get('content'),
@@ -86,8 +92,12 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     };
   }
 
+  const { title } = validatedFields.data;
+
   const updatedPost = {
     ...validatedFields.data,
+    title: title.trim(),
+    slug: generateSlug(title),
     updated_at: new Date(),
   }
 
@@ -102,6 +112,6 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     return { message: 'Database Error: failed to update post.' };
   }
  
-  revalidatePath(`/posts/${updatedPost.slug}`);
-  redirect(`/posts/${updatedPost.slug}`);
+  revalidatePath(`/posts/${getSlugId(updatedPost.slug, id)}`);
+  redirect(`/posts/${getSlugId(updatedPost.slug, id)}`);
 }

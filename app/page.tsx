@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPosts } from "@/lib/db";
 import type { Post } from "@/types/blog";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getSlugId } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,7 @@ export default async function HomePage() {
         <div className="text-center py-20">
           <p className="text-muted-foreground text-lg mb-6">No posts yet. Be the first to write something!</p>
           <Link 
-            href="/posts/new"
+            href="/posts/create"
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-6 py-3 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             Create Your First Post
@@ -37,7 +37,7 @@ export default async function HomePage() {
           {posts.map((post, index) => (
             <Link 
               key={post.id} 
-              href={`/posts/${post.slug}`}
+              href={`/posts/${getSlugId(post.slug, post.id)}`}
               className="group"
               style={{ animationDelay: `${index * 100}ms` }}
             >

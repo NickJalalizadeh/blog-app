@@ -1,18 +1,6 @@
+import { Post } from '@/types/blog';
 import postgres from 'postgres';
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-export interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  author: string;
-  summary: string;
-  content: string;
-  featured_image?: string;
-  tags: string;
-  published_at: Date;
-  updated_at: Date;
-}
 
 export type CreatePostData = Omit<Post, 'id' | 'published_at' | 'updated_at'>;
 export type UpdatePostData = Partial<CreatePostData>;
@@ -32,11 +20,11 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 // Fetch single post by slug
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+export async function getPostByShortId(shortId: string): Promise<Post | null> {
   try {
     const rows = await sql<Post[]>`
       SELECT * FROM posts 
-      WHERE slug = ${slug}
+      WHERE short_id = ${shortId}
       LIMIT 1
     `;
     return rows[0] || null;
@@ -114,14 +102,4 @@ export async function deletePost(id: number): Promise<boolean> {
     console.error('Failed to delete post:', error);
     return false;
   }
-}
-
-// Generate slug from title
-export function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
 }

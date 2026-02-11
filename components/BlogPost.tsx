@@ -1,8 +1,8 @@
-import { Post } from "@/lib/db"
+import { Post } from "@/types/blog"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import Image from "next/image";
-import { formatDate } from "@/lib/utils"
+import { formatDate, getSlugId } from "@/lib/utils"
 
 const BlogPost = ({ post }: { post: Post }) => {
   return (
@@ -53,7 +53,7 @@ const BlogPost = ({ post }: { post: Post }) => {
       <div className="border-t border-border/40 mt-16 pt-8">
         <div className="flex gap-4">
           <Button asChild>
-            <Link href={`/posts/${post.slug}/edit`}>
+            <Link href={`/posts/${getSlugId(post.slug, post.id)}/edit`}>
               Edit Post
             </Link>
           </Button>

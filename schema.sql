@@ -5,24 +5,26 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS posts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  short_id TEXT GENERATED ALWAYS AS (left(id::text, 8)) STORED,
   title VARCHAR(255) NOT NULL,
-  slug VARCHAR(255) NOT NULL UNIQUE,
+  slug VARCHAR(255) NOT NULL,
   summary TEXT NOT NULL,
   content TEXT NOT NULL,
   author VARCHAR(100) NOT NULL,
   featured_image TEXT,
+  tags VARCHAR(255) NOT NULL,
   published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create an index on slug for faster lookups
-CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+CREATE INDEX IF NOT EXISTS idx_posts_short_id ON posts(short_id);
 
 -- Create an index on published_at for sorting
 CREATE INDEX IF NOT EXISTS idx_posts_published_at ON posts(published_at DESC);
 
 -- Sample data (optional)
-INSERT INTO posts (title, slug, summary, content, author, featured_image) VALUES
+INSERT INTO posts (title, slug, summary, content, author, featured_image, tags) VALUES
 (
   'Welcome to The Chronicle',
   'welcome-to-the-chronicle',
@@ -37,7 +39,8 @@ Getting started is simple. Create your first post, share your ideas, and join ou
 
 Welcome aboard. We can''t wait to see what you create.',
   'The Chronicle Team',
-  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=600&fit=crop'
+  'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=600&fit=crop',
+  'Chronicle, Welcome'
 ),
 (
   'The Art of Writing in the Digital Age',
@@ -55,7 +58,8 @@ The key is finding the balance. Write with depth, but make your depth accessible
 
 In the end, great writing transcends the medium. Whether on paper or screen, it''s about connecting with readers through words that matter.',
   'Sarah Chen',
-  'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&h=600&fit=crop'
+  'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&h=600&fit=crop',
+  'Writing, Digital'
 ),
 (
   'Building a Better Web, One Component at a Time',
@@ -73,5 +77,6 @@ But components are more than just a technical pattern. They represent a way of t
 
 The best part? This approach scales. Whether you''re building a small blog or a complex web application, thinking in components will serve you well. It''s not just about better code—it''s about building a better web.',
   'Alex Rodriguez',
-  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop'
+  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop',
+  'Web, Development'
 );

@@ -1,20 +1,17 @@
-import { notFound } from "next/navigation";
-import { getPostBySlug } from "@/lib/db";
 import EditBlogForm from "@/components/EditBlogForm";
+import { resolvePostFromSlugId } from "@/lib/posts/resolvePostFromSlugId";
 
 interface EditPostPageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slugId: string; }>;
 }
 
 export default async function EditPostPage(props: EditPostPageProps) {
   const params = await props.params;
-  const post = await getPostBySlug(params.slug);
+  const slugId = params.slugId;
 
-  if (!post) {
-    notFound();
-  }
+  const post = await resolvePostFromSlugId(slugId, {
+    redirectOnMismatch: false
+  });
 
   return (
     <>
