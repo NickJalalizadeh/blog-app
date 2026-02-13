@@ -3,6 +3,7 @@ import { Button } from "./ui/button"
 import Link from "next/link"
 import Image from "next/image";
 import { formatDate, getSlugId } from "@/lib/utils"
+import DeletePostButton from "./DeletePostButton";
 
 const BlogPost = ({ post }: { post: Post }) => {
   return (
@@ -51,13 +52,13 @@ const BlogPost = ({ post }: { post: Post }) => {
 
       {/* Actions */}
       <div className="border-t border-border/40 mt-16 pt-8">
-        <div className="flex gap-4">
+        <div className="flex justify-between gap-4">
           <Button asChild>
             <Link href={`/posts/${getSlugId(post.slug, post.id)}/edit`}>
               Edit Post
             </Link>
           </Button>
-          {/* <DeletePostButton postId={post.id} postSlug={post.slug} /> */}
+          <DeletePostButton id={post.id} />
         </div>
       </div>
     </article>

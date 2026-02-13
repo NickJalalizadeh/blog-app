@@ -13,7 +13,7 @@ const FormSchema = z.object({
   title: z.string().min(10, { error: 'The title must be at least 10 characters.' }),
   author: z.string().min(4, { error: 'The author must be at least 4 characters.' }),
   summary: z.string(),
-  content: z.string().min(50, { error: 'The post content must be at least 50 characters.' }),
+  content: z.string().min(20, { error: 'The post content must be at least 20 characters.' }),
   featured_image: z.string(),
   tags: z.string(),
 });
@@ -21,15 +21,17 @@ const FormSchema = z.object({
 const CreatePost = FormSchema.omit({ id: true });
 const UpdatePost = FormSchema.omit({ id: true });
 
+export type FormStateErrors = {
+  title?: { errors: string[] };
+  author?: { errors: string[] };
+  summary?: { errors: string[] };
+  content?: { errors: string[] };
+  featured_image?: { errors: string[] };
+  tags?: { errors: string[] };
+};
+
 export type FormState = {
-  errors?: {
-    title?: { errors: string[] };
-    author?: { errors: string[] };
-    summary?: { errors: string[] };
-    content?: { errors: string[] };
-    featured_image?: { errors: string[] };
-    tags?: { errors: string[] };
-  };
+  errors?: FormStateErrors,
   message?: string | null;
 };
 
@@ -114,4 +116,20 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
  
   revalidatePath(`/posts/${getSlugId(updatedPost.slug, id)}`);
   redirect(`/posts/${getSlugId(updatedPost.slug, id)}`);
+}
+
+// Delete post
+export async function deletePost(id: string, prevState: FormState | undefined) {
+  try {
+    await sql`
+      DELETE FROM postsLALALA 
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error(error);
+    return { message: 'Database Error: failed to delete post.' };
+  }
+
+  revalidatePath('/');
+  redirect('/');
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "The Chronicle - A Modern Blog",
@@ -45,6 +46,8 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+
+          <Toaster position="top-right" richColors={true} closeButton={true} />
           
           <footer className="border-t border-border/40 mt-24">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
