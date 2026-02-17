@@ -1,4 +1,4 @@
-import BlogPost from "@/components/BlogPost";
+import BlogPost from "@/components/posts/BlogPost";
 import { resolvePostFromSlugId } from "@/lib/posts/resolvePostFromSlugId";
 
 interface PostPageProps {

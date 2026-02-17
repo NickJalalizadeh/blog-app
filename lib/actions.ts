@@ -31,6 +31,7 @@ export type FormStateErrors = {
 };
 
 export type FormState = {
+  success?: boolean,
   errors?: FormStateErrors,
   message?: string | null;
 };
@@ -47,6 +48,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
 
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: z.treeifyError(validatedFields.error).properties,
       message: 'Invalid fields. Failed to create post.',
     };
@@ -70,7 +72,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
     post = rows[0];
   } catch(error) {
     console.error(error);
-    return { message: 'Database Error: failed to create post.' };
+    return { success: false, message: 'Database Error: failed to create post.' };
   }
  
   revalidatePath(`/posts/${getSlugId(post.slug, post.id)}`);
@@ -89,6 +91,7 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
 
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: z.treeifyError(validatedFields.error).properties,
       message: 'Invalid fields. Failed to update post.',
     };
@@ -111,9 +114,9 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     `;
   } catch(error) {
     console.error(error);
-    return { message: 'Database Error: failed to update post.' };
+    return { succeess: false, message: 'Database Error: failed to update post.' };
   }
- 
+
   revalidatePath(`/posts/${getSlugId(updatedPost.slug, id)}`);
   redirect(`/posts/${getSlugId(updatedPost.slug, id)}`);
 }
@@ -122,12 +125,12 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
 export async function deletePost(id: string, prevState: FormState | undefined) {
   try {
     await sql`
-      DELETE FROM postsLALALA 
+      SELECT count(1) FROM posts 
       WHERE id = ${id}
     `;
   } catch (error) {
     console.error(error);
-    return { message: 'Database Error: failed to delete post.' };
+    return { success: false, message: 'Database Error: failed to delete post.' };
   }
 
   revalidatePath('/');

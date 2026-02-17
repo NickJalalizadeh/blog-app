@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { getPosts } from "@/lib/db";
 import type { Post } from "@/types/blog";
-import { formatDate, getSlugId } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
-export const dynamic = 'force-dynamic';
+import BlogCard from "@/components/BlogCard";
 
 export default async function HomePage() {
   const posts: Post[] = await getPosts();
@@ -34,42 +31,7 @@ export default async function HomePage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post, index) => (
-            <Link 
-              key={post.id} 
-              href={`/posts/${getSlugId(post.slug, post.id)}`}
-              className="group"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-accent/50 hover:-translate-y-1">
-                {post.featured_image && (
-                  <div className="aspect-[16/9] overflow-hidden rounded-t-lg">
-                    <img 
-                      src={post.featured_image} 
-                      alt={post.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                )}
-                <CardHeader>
-                  <div className="text-xs font-medium text-accent mb-2 uppercase tracking-wider">
-                    {formatDate(post.published_at)}
-                  </div>
-                  <CardTitle className="font-serif text-2xl mb-2 group-hover:text-accent transition-colors line-clamp-2">
-                    {post.title}
-                  </CardTitle>
-                  <CardDescription className="text-base line-clamp-3">
-                    {post.summary}
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <div className="text-sm text-muted-foreground">
-                    By {post.author}
-                  </div>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
+          {posts.map((post) => <BlogCard key={post.id} post={post} />)}
         </div>
       )}
     </div>

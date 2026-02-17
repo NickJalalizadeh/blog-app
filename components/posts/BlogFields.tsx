@@ -1,7 +1,7 @@
 import { FormStateErrors } from '@/lib/actions';
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from './ui/field';
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Textarea } from './ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function BlogFields({
   defaultValues,

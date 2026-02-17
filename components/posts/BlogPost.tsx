@@ -1,5 +1,5 @@
 import { Post } from "@/types/blog"
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image";
 import { formatDate, getSlugId } from "@/lib/utils"

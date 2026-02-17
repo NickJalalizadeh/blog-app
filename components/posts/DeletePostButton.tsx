@@ -1,18 +1,14 @@
 'use client';
 
 import { deletePost } from "@/lib/actions";
-import { useActionState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { toast } from "sonner";
+import { useActionState } from "react";
+import { Button } from "@/components/ui/button";
+import useActionToast from "@/hooks/useActionToast";
 
 export default function DeletePostButton({ id }: { id: string }) {
   const deletePostWithId = deletePost.bind(null, id);
   const [state, formAction, isLoading] = useActionState(deletePostWithId, undefined);
-
-  useEffect(() => {
-    if (state?.message)
-      toast.error(state.message);
-  }, [state]);
+  useActionToast(state);
 
   return (
     <form action={formAction}>

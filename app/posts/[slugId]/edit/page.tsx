@@ -1,4 +1,4 @@
-import EditBlogForm from "@/components/EditBlogForm";
+import EditBlogForm from "@/components/posts/EditBlogForm";
 import { resolvePostFromSlugId } from "@/lib/posts/resolvePostFromSlugId";
 
 interface EditPostPageProps {
