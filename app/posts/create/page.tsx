@@ -1,4 +1,4 @@
-import CreateBlogForm from "@/components/CreateBlogForm";
+import CreateBlogForm from "@/components/posts/CreateBlogForm";
 
 export default async function CreatePostPage() {
   return (
