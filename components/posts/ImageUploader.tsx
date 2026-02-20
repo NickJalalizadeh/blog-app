@@ -1,67 +1,80 @@
 'use client'
 
-import { uploadImage } from '@/lib/actions';
-import { startTransition, useActionState, useRef, useState } from 'react';
-import { Field, FieldError, FieldLabel } from '../ui/field';
-import { Input } from '../ui/input';
-import Image from 'next/image';
-import useActionErrorToast from '@/hooks/useActionErrorToast';
-import { Spinner } from '../ui/spinner';
-import clsx from 'clsx';
-import { Button } from '../ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
-import { extractFilename } from '@/lib/utils';
+import { extractFilenameFromBlob } from '@/lib/utils';
+import { useRef, useState } from 'react';
+import ImagePreview from '@/components/posts/ImagePreview';
 
-export default function ImageUploader({ featuredImageUrl } : { featuredImageUrl?: string | undefined }) {
-  const [previewUrl, setPreviewUrl] = useState(featuredImageUrl);
-  const [state, uploadAction, isUploading] = useActionState(uploadImage, undefined);
-  const [fileName, setFileName] = useState(featuredImageUrl ? extractFilename(featuredImageUrl) : null);
+type ImageUploaderProps = {
+  featuredImageUrl?: string | undefined,
+  errors?: string[] | undefined,
+};
+
+export default function ImageUploader({ featuredImageUrl, errors } : ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useActionErrorToast(state);
-
-  console.log({errors: state?.errors});
+  const [imageState, setImageState] = useState({
+    previewUrl: featuredImageUrl,
+    fileName: featuredImageUrl && extractFilenameFromBlob(featuredImageUrl),
+    isMarkedForDeletion: false,
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file)
+      return;
 
-    setFileName(file.name);
     // Show preview immediately
     const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-
-    startTransition(() => {
-      uploadAction(file);
+    setImageState({
+      previewUrl: objectUrl,
+      fileName: file.name,
+      isMarkedForDeletion: false,
     });
+  };
+
+  const handleRemoveImage = () => {
+    setImageState({
+      previewUrl: undefined,
+      fileName: undefined,
+      isMarkedForDeletion: true,
+    });
+    
+    // Clear the file input
+    if (fileInputRef.current)
+      fileInputRef.current.value = '';
   };
 
   return (
     <div className="flex gap-2">
       <div className="flex-1 flex flex-col gap-4 items-start">
         <Field>
-          {/* Hidden input to store the uploaded URL */}
-          <input type="hidden" name="featured_image" value={state?.url || ''} />
-
           <FieldLabel htmlFor="featured_image">Featured Image</FieldLabel>
 
-          {/* Hidden file input referenced by button */}
+          {/* Hidden input stores existing image URL */}
+          <input type="hidden" name="existing_featured_image" value={featuredImageUrl} />
+          {/* Hidden input stores request to delete image */}
+          <input type="hidden" name="delete_featured_image" value={imageState.isMarkedForDeletion ? 'true' : 'false'} />
+
+          {/* Hidden file input referenced by upload button */}
           <Input
             ref={fileInputRef}
             id="featured_image"
+            name="featured_image"
             type="file"
             accept="image/jpeg, image/png"
             className="hidden"
             onChange={handleFileChange}
-            disabled={isUploading}
-            aria-invalid={!!state?.errors?.length}
+            aria-invalid={!!errors?.length}
           />
           
-          {fileName && (
-            <p className="text-foreground text-sm line-clamp-1">{fileName}</p>
+          {imageState.fileName && (
+            <p className="text-foreground text-sm line-clamp-1">{imageState.fileName}</p>
           )}
 
-          {state?.errors?.map(e =>
+          {errors?.map(e =>
             <FieldError key={e}>{e}</FieldError>
           )}
         </Field>
@@ -71,32 +84,20 @@ export default function ImageUploader({ featuredImageUrl } : { featuredImageUrl?
           type="button"
           variant="ghost"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
         >
           <Upload className="size-4" data-icon="inline-start"/>
-          {previewUrl ? 'Replace Image' : 'Select Image'}
+          {imageState.previewUrl ? 'Replace Image' : 'Select Image'}
         </Button>
       </div>
 
-      {/* Preview */}
-      <div className="relative max-w-xs rounded-md">
-        {previewUrl && (
-          <Image 
-            src={previewUrl} 
-            alt="Preview" 
-            width={1600}
-            height={900}
-            className={clsx('rounded-md cursor-pointer', {'opacity-50': isUploading})}
-            onClick={() => fileInputRef.current?.click()}
-          />
-        )}
-        {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-md text-white bg-black/40">
-            <Spinner className="size-6" />
-            <p>Uploading</p>
-          </div>
-        )}
-      </div>
+      {/* Preview Image */}
+      {imageState.previewUrl && (
+        <ImagePreview
+          url={imageState.previewUrl} 
+          onReplace={() => fileInputRef.current?.click()} 
+          onRemove={handleRemoveImage} 
+        />
+      )}
     </div>
   );
 }

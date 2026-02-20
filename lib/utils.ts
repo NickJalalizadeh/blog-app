@@ -40,7 +40,7 @@ export function parseSlugId(slugId: string) {
   }
 }
 
-export function extractFilename(url: string): string {
+export function extractFilenameFromBlob(url: string): string {
   const pathname = new URL(url).pathname;
   const filename = pathname.split('/').pop() || '';
   
