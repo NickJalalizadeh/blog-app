@@ -39,3 +39,13 @@ export function parseSlugId(slugId: string) {
     shortId: slugId.slice(lastDashIdx + 1),
   }
 }
+
+export function extractFilename(url: string): string {
+  const pathname = new URL(url).pathname;
+  const filename = pathname.split('/').pop() || '';
+  
+  // Remove Vercel Blob hash pattern: -[alphanumeric] before extension
+  const match = filename.match(/^(.+)-[A-Za-z0-9]+(\.[^.]+)$/);
+  
+  return match ? match[1] + match[2] : filename;
+}

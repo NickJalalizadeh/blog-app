@@ -9,7 +9,6 @@ import useActionErrorToast from '@/hooks/useActionErrorToast';
 
 export default function CreateBlogForm() {
   const [state, formAction, isLoading] = useActionState(createPost, undefined);
-  
   useActionErrorToast(state);
 
   return (

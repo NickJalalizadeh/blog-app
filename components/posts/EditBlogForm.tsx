@@ -12,7 +12,6 @@ import useActionErrorToast from '@/hooks/useActionErrorToast';
 export default function EditBlogForm({ post }: { post: Post }) {
   const updatePostWithId = updatePost.bind(null, post.id);
   const [state, formAction, isLoading] = useActionState(updatePostWithId, undefined);
-  
   useActionErrorToast(state);
 
   return (
