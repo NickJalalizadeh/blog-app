@@ -1,7 +1,6 @@
 'use client'
 
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { extractFilenameFromBlob } from '@/lib/utils';
@@ -12,10 +11,17 @@ type ImageUploaderProps = {
   featuredImageUrl?: string | undefined,
   errors?: string[] | undefined,
 };
+type ImageState = {
+  selectedFiles: FileList | null, 
+  previewUrl: string | undefined, 
+  fileName: string | undefined, 
+  isMarkedForDeletion: boolean,
+}
 
 export default function ImageUploader({ featuredImageUrl, errors } : ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageState, setImageState] = useState({
+  const [imageState, setImageState] = useState<ImageState>({
+    selectedFiles: null,
     previewUrl: featuredImageUrl,
     fileName: featuredImageUrl && extractFilenameFromBlob(featuredImageUrl),
     isMarkedForDeletion: false,
@@ -23,12 +29,16 @@ export default function ImageUploader({ featuredImageUrl, errors } : ImageUpload
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file)
+    if (!file) {
+      // If file dialog box in cancelled, file is removed on some browsers. So add it back here.
+      e.target.files = imageState.selectedFiles;
       return;
+    }
 
     // Show preview immediately
     const objectUrl = URL.createObjectURL(file);
     setImageState({
+      selectedFiles: e.target.files,
       previewUrl: objectUrl,
       fileName: file.name,
       isMarkedForDeletion: false,
@@ -37,6 +47,7 @@ export default function ImageUploader({ featuredImageUrl, errors } : ImageUpload
 
   const handleRemoveImage = () => {
     setImageState({
+      selectedFiles: null,
       previewUrl: undefined,
       fileName: undefined,
       isMarkedForDeletion: true,
@@ -59,7 +70,7 @@ export default function ImageUploader({ featuredImageUrl, errors } : ImageUpload
           <input type="hidden" name="delete_featured_image" value={imageState.isMarkedForDeletion ? 'true' : 'false'} />
 
           {/* Hidden file input referenced by upload button */}
-          <Input
+          <input
             ref={fileInputRef}
             id="featured_image"
             name="featured_image"
