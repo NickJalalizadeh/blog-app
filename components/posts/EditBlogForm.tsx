@@ -11,12 +11,12 @@ import useActionErrorToast from '@/hooks/useActionErrorToast';
 
 export default function EditBlogForm({ post }: { post: Post }) {
   const updatePostWithId = updatePost.bind(null, post.id);
-  const [state, formAction, isLoading] = useActionState(updatePostWithId, undefined);
+  const [state, formAction, isLoading] = useActionState(updatePostWithId, {success: true, response: post});
   useActionErrorToast(state);
-
+  
   return (
     <form action={formAction} className="space-y-6">
-      <BlogFields defaultValues={post} errors={state?.errors} errorMessage={state?.message}></BlogFields>
+      <BlogFields defaultValues={state.response} errors={state.errors}></BlogFields>
       <div className="flex gap-4">
         <Button type="submit" disabled={isLoading} className="flex-1">Update Post</Button>
         <Button variant="outline" className="flex-1" asChild>

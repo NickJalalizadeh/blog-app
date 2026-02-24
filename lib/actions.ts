@@ -4,8 +4,9 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { generateSlug, getSlugId } from './utils';
+import { constructFormResponse, generateSlug, getSlugId } from './utils';
 import { del, put } from '@vercel/blob';
+import { FormState } from '@/types/blog';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -19,35 +20,19 @@ const FormSchema = z.object({
   summary: z.string().trim().min(10, { error: 'The summary must be at least 10 characters' }),
   content: z.string().trim().min(20, { error: 'The post content must be at least 20 characters.' }),
   featured_image: z.instanceof(File)
-    .optional()
     .refine((file) => !file || file.size <= MAX_UPLOAD_SIZE, { 
       error: 'Image file size must be less than 2 MB.'
     })
     .refine((file) => !file || file.size == 0 || ACCEPTED_FILE_TYPES.includes(file.type), {
       error: 'Image file type must be JPG or PNG.'
     }),
-  tags: z.string().optional(),
+  tags: z.string(),
 });
 
 const CreatePost = FormSchema.omit({ id: true });
 const UpdatePost = FormSchema.omit({ id: true });
 
-export type FormStateErrors = {
-  title?: { errors: string[] };
-  author?: { errors: string[] };
-  summary?: { errors: string[] };
-  content?: { errors: string[] };
-  featured_image?: { errors: string[] };
-  tags?: { errors: string[] };
-};
-
-export type FormState = {
-  success?: boolean,
-  errors?: FormStateErrors,
-  message?: string,
-};
-
-export async function createPost(prevState: FormState | undefined, formData: FormData) {
+export async function createPost(prevState: FormState | undefined, formData: FormData): Promise<FormState> {
   const validatedFields = CreatePost.safeParse({
     title: formData.get('title'),
     author: formData.get('author'),
@@ -57,9 +42,12 @@ export async function createPost(prevState: FormState | undefined, formData: For
     tags: formData.get('tags'),
   });
 
+  const response = constructFormResponse(formData);
+
   if (!validatedFields.success) {
     return {
       success: false,
+      response,
       errors: z.treeifyError(validatedFields.error).properties,
       message: 'Invalid fields. Failed to create post.',
     };
@@ -69,12 +57,10 @@ export async function createPost(prevState: FormState | undefined, formData: For
   let featuredImageUrl: string = '';
 
   if (featured_image && featured_image.size > 0) {
-    console.log('uploading image...');
     const uploadedUrl = await uploadImage(featured_image);
     if (!uploadedUrl) {
       return {
-        success: false,
-        message: 'Database Error: failed to upload image.'
+        success: false, response, message: 'Database Error: failed to upload image.',
       };
     }
     featuredImageUrl = uploadedUrl;
@@ -97,14 +83,16 @@ export async function createPost(prevState: FormState | undefined, formData: For
     post = rows[0];
   } catch(error) {
     console.error(error);
-    return { success: false, message: 'Database Error: failed to create post.' };
+    return {
+      success: false, response, message: 'Database Error: failed to create post.',
+    };
   }
  
   revalidatePath(`/posts/${getSlugId(post.slug, post.id)}`);
   redirect(`/posts/${getSlugId(post.slug, post.id)}`);
 }
 
-export async function updatePost(id: string, prevState: FormState | undefined, formData: FormData) {
+export async function updatePost(id: string, prevState: FormState | undefined, formData: FormData): Promise<FormState> {
   const validatedFields = UpdatePost.safeParse({
     title: formData.get('title'),
     author: formData.get('author'),
@@ -113,13 +101,15 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     featured_image: formData.get('featured_image'),
     tags: formData.get('tags'),
   });
-  console.log(formData.get('featured_image'));
   const existingImageUrl = formData.get('existing_featured_image') as string;
   const shouldDeleteImage: boolean = formData.get('delete_featured_image') === 'true';
+
+  const response = constructFormResponse(formData);
 
   if (!validatedFields.success) {
     return {
       success: false,
+      response,
       errors: z.treeifyError(validatedFields.error).properties,
       message: 'Invalid fields. Failed to update post.',
     };
@@ -129,10 +119,8 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
   let featuredImageUrl: string = existingImageUrl;
 
   if (featured_image && featured_image.size > 0) {
-    console.log('uploading image...');
     // Delete old image if we're replacing it with a new image
     if (existingImageUrl) {
-      console.log('deleting old image...');
       await deleteImage(existingImageUrl);
       // If fails, continue anyway - better to have orphaned file than fail the update
     }
@@ -140,20 +128,16 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     const uploadedUrl = await uploadImage(featured_image);
     if (!uploadedUrl) {
       return {
-        success: false,
-        message: 'Database Error: failed to upload image.'
+        success: false, response, message: 'Database Error: failed to upload image.',
       };
     }
     featuredImageUrl = uploadedUrl;
   }
   else if (shouldDeleteImage && existingImageUrl) {
     // Existing image should be deleted and no new image was uploaded to replace it
-    console.log('deleting image');
     await deleteImage(existingImageUrl);
     featuredImageUrl = '';
   }
-
-  console.log({featuredImageUrl});
 
   const newPost = {
     ...validatedFields.data,
@@ -170,7 +154,9 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     `;
   } catch(error) {
     console.error(error);
-    return { succeess: false, message: 'Database Error: failed to update post.' };
+    return {
+      success: false, response, message: 'Database Error: failed to update post.',
+    };
   }
 
   revalidatePath(`/posts/${getSlugId(newPost.slug, id)}`);
