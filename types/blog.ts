@@ -32,7 +32,7 @@ export interface FormResponse {
 
 export interface FormState {
   success: boolean,
-  response: FormResponse,
+  response?: FormResponse,
   errors?: FormErrors,
   message?: string,
 };
