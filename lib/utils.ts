@@ -52,7 +52,7 @@ export function extractFilenameFromUrl(url: string): string {
   return match ? match[1] + match[2] : filename;
 }
 
-export function getImageProperties(image: Blob | string) {
+export function getImageProperties(image?: Blob | string) {
   let url, fileName;
   if (typeof image === 'string') {
     url = image;

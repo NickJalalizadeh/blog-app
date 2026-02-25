@@ -8,7 +8,7 @@ export default function BlogFields({
   defaultValues,
   errors,
 }: {
-  defaultValues: FormResponse,
+  defaultValues?: FormResponse,
   errors?: FormErrors,
 }) {
   return (
@@ -23,7 +23,7 @@ export default function BlogFields({
               <Input
                 id="title"
                 name="title"
-                defaultValue={defaultValues.title}
+                defaultValue={defaultValues?.title}
                 placeholder="Enter post title"
                 autoComplete="off"
                 aria-invalid={!!errors?.title?.errors?.length}
@@ -35,7 +35,7 @@ export default function BlogFields({
               <Input
                 id="author"
                 name="author"
-                defaultValue={defaultValues.author}
+                defaultValue={defaultValues?.author}
                 placeholder="Author name"
                 autoComplete="off"
                 aria-invalid={!!errors?.author?.errors?.length}
@@ -45,7 +45,7 @@ export default function BlogFields({
           </div>
           {/* Image File Picker */}
           <ImageUploader
-            image={defaultValues.featured_image}
+            image={defaultValues?.featured_image}
             errors={errors?.featured_image?.errors}
           />
           <Field>
@@ -54,7 +54,7 @@ export default function BlogFields({
             <Textarea
               id="summary"
               name="summary"
-              defaultValue={defaultValues.summary}
+              defaultValue={defaultValues?.summary}
               placeholder="Short summary of the post"
               rows={5}
               autoComplete="off"
@@ -75,7 +75,7 @@ export default function BlogFields({
             <Textarea
               id="content"
               name="content"
-              defaultValue={defaultValues.content}
+              defaultValue={defaultValues?.content}
               placeholder="Write your blog post content here..."
               rows={12}
               autoComplete="off"
@@ -89,7 +89,7 @@ export default function BlogFields({
             <Input
               id="tags"
               name="tags"
-              defaultValue={defaultValues.tags}
+              defaultValue={defaultValues?.tags}
               placeholder="Tags that describe your post"
               autoComplete="off"
               aria-invalid={!!errors?.tags?.errors?.length}

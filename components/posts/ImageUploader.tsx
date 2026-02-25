@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import ImagePreview from '@/components/posts/ImagePreview';
 
 type ImageUploaderProps = {
-  image: Blob | string,
+  image?: Blob | string,
   errors?: string[] | undefined,
 };
 
