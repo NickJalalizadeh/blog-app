@@ -1,4 +1,5 @@
 import { FormResponse } from "@/types/blog";
+import BlogImage from "@/types/BlogImage";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -41,53 +42,16 @@ export function parseSlugId(slugId: string) {
   }
 }
 
-export function extractFilenameFromUrl(url: string): string {
-  if (url === '') return '';
-  const pathname = new URL(url).pathname;
-  const filename = pathname.split('/').pop() || '';
-  
-  // Remove Vercel Blob hash pattern: -[alphanumeric] before extension
-  const match = filename.match(/^(.+)-[A-Za-z0-9]+(\.[^.]+)$/);
-  
-  return match ? match[1] + match[2] : filename;
-}
-
-export function getImageProperties(image?: Blob | string) {
-  let url, fileName;
-  if (typeof image === 'string') {
-    url = image;
-    fileName = extractFilenameFromUrl(url);
-  }
-  else if (image instanceof File && image.size > 0) {
-    url = URL.createObjectURL(image);
-    fileName = image.name;
-  }
-
-  return [ url, fileName ];
-}
-
-export function createFileList(blob: Blob, fileName: string): FileList {
-  const file = new File([blob], fileName, { 
-    type: blob.type,
-  });
-  const dataTransfer = new DataTransfer();
-  dataTransfer.items.add(file);
-  return dataTransfer.files;
-}
-
-export function constructFormResponse(formData: FormData): FormResponse {
+export function constructFormResponse(formData: FormData, existingImageUrl: string = '', shouldDeleteImage: boolean = false): FormResponse {
   const featuredImage = formData.get('featured_image') as File;
-  const existingImageUrl = formData.get('existing_featured_image') as string;
-  const shouldDeleteImage = formData.get('delete_featured_image') === 'true';
-
-  const imageResponse = featuredImage.size === 0 && !shouldDeleteImage ? existingImageUrl : featuredImage;
+  const image = featuredImage.size === 0 && !shouldDeleteImage ? existingImageUrl : featuredImage;
 
   return {
     title: formData.get('title') as string,
     author: formData.get('author') as string,
     summary: formData.get('summary') as string,
     content: formData.get('content') as string,
-    featured_image: imageResponse,
+    featured_image: new BlogImage(image),
     tags: formData.get('tags') as string,
   };
 }

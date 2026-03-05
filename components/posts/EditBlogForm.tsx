@@ -8,10 +8,14 @@ import BlogFields from './BlogFields';
 import Link from 'next/link';
 import { getSlugId } from '@/lib/utils';
 import useActionErrorToast from '@/hooks/useActionErrorToast';
+import BlogImage from '@/types/BlogImage';
 
 export default function EditBlogForm({ post }: { post: Post }) {
-  const updatePostWithId = updatePost.bind(null, post.id);
-  const [state, formAction, isLoading] = useActionState(updatePostWithId, {success: true, response: post});
+  const updatePostWithId = updatePost.bind(null, post.id, post.featured_image);
+  const [state, formAction, isLoading] = useActionState(updatePostWithId, {
+    success: true,
+    response: {...post, featured_image: new BlogImage(post.featured_image)}
+  });
   useActionErrorToast(state);
   
   return (

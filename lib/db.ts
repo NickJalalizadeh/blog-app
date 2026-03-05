@@ -35,7 +35,7 @@ export async function getPostByShortId(shortId: string): Promise<Post | null> {
 }
 
 // Fetch single post by ID
-export async function getPostById(id: number): Promise<Post | null> {
+export async function getPostById(id: string): Promise<Post | null> {
   try {
     const rows = await sql<Post[]>`
       SELECT * FROM posts 

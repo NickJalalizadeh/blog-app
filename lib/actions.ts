@@ -92,7 +92,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
   redirect(`/posts/${getSlugId(post.slug, post.id)}`);
 }
 
-export async function updatePost(id: string, prevState: FormState | undefined, formData: FormData): Promise<FormState> {
+export async function updatePost(id: string, existingImageUrl: string, prevState: FormState | undefined, formData: FormData): Promise<FormState> {
   const validatedFields = UpdatePost.safeParse({
     title: formData.get('title'),
     author: formData.get('author'),
@@ -101,48 +101,30 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     featured_image: formData.get('featured_image'),
     tags: formData.get('tags'),
   });
-  const existingImageUrl = formData.get('existing_featured_image') as string;
+  console.log({existingImageUrl});
   const shouldDeleteImage: boolean = formData.get('delete_featured_image') === 'true';
-
-  const response = constructFormResponse(formData);
-
+  const response = constructFormResponse(formData, existingImageUrl, shouldDeleteImage);
+  console.log({response});
   if (!validatedFields.success) {
     return {
       success: false,
       response,
       errors: z.treeifyError(validatedFields.error).properties,
-      message: 'Invalid fields. Failed to update post.',
+      message: 'Please fix validation errors.',
     };
   }
 
   const { title, featured_image } = validatedFields.data;
-  let featuredImageUrl: string = existingImageUrl;
 
-  if (featured_image && featured_image.size > 0) {
-    // Delete old image if we're replacing it with a new image
-    if (existingImageUrl) {
-      await deleteImage(existingImageUrl);
-      // If fails, continue anyway - better to have orphaned file than fail the update
-    }
-
-    const uploadedUrl = await uploadImage(featured_image);
-    if (!uploadedUrl) {
-      return {
-        success: false, response, message: 'Database Error: failed to upload image.',
-      };
-    }
-    featuredImageUrl = uploadedUrl;
-  }
-  else if (shouldDeleteImage && existingImageUrl) {
-    // Existing image should be deleted and no new image was uploaded to replace it
-    await deleteImage(existingImageUrl);
-    featuredImageUrl = '';
+  const result = await replaceOrDeleteImage(featured_image, existingImageUrl, shouldDeleteImage);
+  if (!result.success) {
+    return { success: false, response, message: 'Database Error: failed to upload image.' };
   }
 
   const newPost = {
     ...validatedFields.data,
     slug: generateSlug(title),
-    featured_image: featuredImageUrl,
+    featured_image: result.newImageUrl,
     updated_at: new Date(),
   }
 
@@ -154,16 +136,38 @@ export async function updatePost(id: string, prevState: FormState | undefined, f
     `;
   } catch(error) {
     console.error(error);
-    return {
-      success: false, response, message: 'Database Error: failed to update post.',
-    };
+    return { success: false, response, message: 'Database Error: failed to update post.' };
   }
 
   revalidatePath(`/posts/${getSlugId(newPost.slug, id)}`);
   redirect(`/posts/${getSlugId(newPost.slug, id)}`);
 }
 
-export async function uploadImage(image: File): Promise<string | false> {
+async function replaceOrDeleteImage(newImage: File, existingImageUrl: string, shouldDeleteImage: boolean) {
+  let newImageUrl: string = existingImageUrl;
+
+  if (newImage.size > 0) {
+    // Delete old image if we're replacing it with a new image
+    if (existingImageUrl) {
+      await deleteImage(existingImageUrl);
+      // If fails, continue anyway - better to have orphaned file than fail the update
+    }
+
+    const uploadedUrl = await uploadImage(newImage);
+    if (!uploadedUrl)
+      return { success: false };
+
+    newImageUrl = uploadedUrl;
+  }
+  else if (shouldDeleteImage && existingImageUrl) {
+    // Existing image should be deleted and no new image was uploaded to replace it
+    await deleteImage(existingImageUrl);
+    newImageUrl = '';
+  }
+  return { success: true, newImageUrl };
+}
+
+async function uploadImage(image: File): Promise<string | false> {
   try {
     const blob = await put(image.name, image, {
       access: 'public',
@@ -177,7 +181,7 @@ export async function uploadImage(image: File): Promise<string | false> {
   }
 }
 
-export async function deleteImage(imageUrl: string): Promise<boolean> {
+async function deleteImage(imageUrl: string): Promise<boolean> {
   try {
     await del(imageUrl);
     return true;

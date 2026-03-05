@@ -3,12 +3,12 @@
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
-import { createFileList, getImageProperties } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
+import BlogImage from '@/types/BlogImage';
 import ImagePreview from '@/components/posts/ImagePreview';
 
 type ImageUploaderProps = {
-  image?: Blob | string,
+  image?: BlogImage,
   errors?: string[] | undefined,
 };
 
@@ -21,19 +21,17 @@ type ImageState = {
 export default function ImageUploader({ image, errors } : ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectedFiles = useRef<FileList>(null);
-  const [imageUrl, imageFileName] = getImageProperties(image);
   const [imageState, setImageState] = useState<ImageState>({
-    previewUrl: imageUrl,
-    fileName: imageFileName,
+    previewUrl: image?.url,
+    fileName: image?.fileName,
     isMarkedForDeletion: false,
   });
 
   useEffect(() => {
     if (!fileInputRef.current) return;
-    if (image instanceof Blob) {
-      const files = createFileList(image, imageState.fileName || 'featured_image.jpg');
-      fileInputRef.current.files = files;
-      selectedFiles.current = files;
+    if (image?.fileList) {
+      fileInputRef.current.files = image.fileList;
+      selectedFiles.current = image.fileList;
     }
   }, [image]);
 
@@ -46,10 +44,10 @@ export default function ImageUploader({ image, errors } : ImageUploaderProps) {
     }
     
     // Show preview immediately
-    const [previewUrl, fileName] = getImageProperties(file);
+    const previewImage = new BlogImage(file);
     setImageState({
-      previewUrl,
-      fileName,
+      previewUrl: previewImage.url,
+      fileName: previewImage.fileName,
       isMarkedForDeletion: false,
     });
     
@@ -75,8 +73,6 @@ export default function ImageUploader({ image, errors } : ImageUploaderProps) {
         <FieldLabel htmlFor="featured_image">Featured Image</FieldLabel>
 
         <div className="flex-1 flex flex-col gap-4 items-start">
-          {/* Hidden input stores existing image URL */}
-          <input type="hidden" name="existing_featured_image" value={imageUrl || ''} />
           {/* Hidden input stores request to delete image */}
           <input type="hidden" name="delete_featured_image" value={imageState.isMarkedForDeletion ? 'true' : 'false'} />
 

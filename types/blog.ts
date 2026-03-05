@@ -1,3 +1,5 @@
+import BlogImage from "./BlogImage";
+
 export interface Post {
   id: string;
   short_id: string;
@@ -26,7 +28,7 @@ export interface FormResponse {
   author: string,
   summary: string,
   content: string,
-  featured_image: Blob | string,
+  featured_image: BlogImage,
   tags: string,
 };
 
