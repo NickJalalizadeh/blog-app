@@ -1,5 +1,5 @@
-import { FormResponse } from "@/types/blog";
-import BlogImage from "@/types/BlogImage";
+import { FormValues, Post } from "@/types/blog";
+import BlobImage from "@/types/BlobImage";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -42,8 +42,9 @@ export function parseSlugId(slugId: string) {
   }
 }
 
-export function constructFormResponse(formData: FormData, existingImageUrl: string = '', shouldDeleteImage: boolean = false): FormResponse {
+export function getFormValues(formData: FormData, existingImageUrl: string = ''): FormValues {
   const featuredImage = formData.get('featured_image') as File;
+  const shouldDeleteImage: boolean = formData.get('delete_featured_image') === 'true';
   const image = featuredImage.size === 0 && !shouldDeleteImage ? existingImageUrl : featuredImage;
 
   return {
@@ -51,7 +52,14 @@ export function constructFormResponse(formData: FormData, existingImageUrl: stri
     author: formData.get('author') as string,
     summary: formData.get('summary') as string,
     content: formData.get('content') as string,
-    featured_image: new BlogImage(image),
+    featured_image: new BlobImage(image),
     tags: formData.get('tags') as string,
   };
+}
+
+export function getFormValuesFromPost(post: Post): FormValues {
+  return {
+    ...post,
+    featured_image: new BlobImage(post.featured_image),
+  }
 }

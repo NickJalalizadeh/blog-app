@@ -4,7 +4,7 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { constructFormResponse, generateSlug, getSlugId } from './utils';
+import { generateSlug, getSlugId } from './utils';
 import { del, put } from '@vercel/blob';
 import { FormState } from '@/types/blog';
 
@@ -20,10 +20,10 @@ const FormSchema = z.object({
   summary: z.string().trim().min(10, { error: 'The summary must be at least 10 characters' }),
   content: z.string().trim().min(20, { error: 'The post content must be at least 20 characters.' }),
   featured_image: z.instanceof(File)
-    .refine((file) => !file || file.size <= MAX_UPLOAD_SIZE, { 
+    .refine((file) => file.size <= MAX_UPLOAD_SIZE, { 
       error: 'Image file size must be less than 2 MB.'
     })
-    .refine((file) => !file || file.size == 0 || ACCEPTED_FILE_TYPES.includes(file.type), {
+    .refine((file) => file.size == 0 || ACCEPTED_FILE_TYPES.includes(file.type), {
       error: 'Image file type must be JPG or PNG.'
     }),
   tags: z.string(),
@@ -42,14 +42,13 @@ export async function createPost(prevState: FormState | undefined, formData: For
     tags: formData.get('tags'),
   });
 
-  const response = constructFormResponse(formData);
+  const response = formData;
 
   if (!validatedFields.success) {
     return {
-      success: false,
       response,
       errors: z.treeifyError(validatedFields.error).properties,
-      message: 'Invalid fields. Failed to create post.',
+      message: 'Please fix validation errors.',
     };
   }
 
@@ -59,9 +58,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
   if (featured_image && featured_image.size > 0) {
     const uploadedUrl = await uploadImage(featured_image);
     if (!uploadedUrl) {
-      return {
-        success: false, response, message: 'Database Error: failed to upload image.',
-      };
+      return { response, message: 'Database Error: failed to upload image.' };
     }
     featuredImageUrl = uploadedUrl;
   }
@@ -83,9 +80,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
     post = rows[0];
   } catch(error) {
     console.error(error);
-    return {
-      success: false, response, message: 'Database Error: failed to create post.',
-    };
+    return { response, message: 'Database Error: failed to create post.' };
   }
  
   revalidatePath(`/posts/${getSlugId(post.slug, post.id)}`);
@@ -101,14 +96,13 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
     featured_image: formData.get('featured_image'),
     tags: formData.get('tags'),
   });
-  console.log({existingImageUrl});
   const shouldDeleteImage: boolean = formData.get('delete_featured_image') === 'true';
-  const response = constructFormResponse(formData, existingImageUrl, shouldDeleteImage);
-  console.log({response});
+  const response = formData;
+  
   if (!validatedFields.success) {
+    console.log({formData});
     return {
-      success: false,
-      response,
+      response: formData,
       errors: z.treeifyError(validatedFields.error).properties,
       message: 'Please fix validation errors.',
     };
@@ -118,13 +112,13 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
 
   const result = await replaceOrDeleteImage(featured_image, existingImageUrl, shouldDeleteImage);
   if (!result.success) {
-    return { success: false, response, message: 'Database Error: failed to upload image.' };
+    return { response, message: result.message };
   }
 
   const newPost = {
     ...validatedFields.data,
     slug: generateSlug(title),
-    featured_image: result.newImageUrl,
+    featured_image: result.imageUrl,
     updated_at: new Date(),
   }
 
@@ -136,7 +130,7 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
     `;
   } catch(error) {
     console.error(error);
-    return { success: false, response, message: 'Database Error: failed to update post.' };
+    return { response, message: 'Database Error: failed to update post.' };
   }
 
   revalidatePath(`/posts/${getSlugId(newPost.slug, id)}`);
@@ -144,7 +138,7 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
 }
 
 async function replaceOrDeleteImage(newImage: File, existingImageUrl: string, shouldDeleteImage: boolean) {
-  let newImageUrl: string = existingImageUrl;
+  let imageUrl: string = existingImageUrl;
 
   if (newImage.size > 0) {
     // Delete old image if we're replacing it with a new image
@@ -155,16 +149,16 @@ async function replaceOrDeleteImage(newImage: File, existingImageUrl: string, sh
 
     const uploadedUrl = await uploadImage(newImage);
     if (!uploadedUrl)
-      return { success: false };
+      return { success: false, message: 'Database Error: failed to upload image.' };
 
-    newImageUrl = uploadedUrl;
+    imageUrl = uploadedUrl;
   }
   else if (shouldDeleteImage && existingImageUrl) {
     // Existing image should be deleted and no new image was uploaded to replace it
     await deleteImage(existingImageUrl);
-    newImageUrl = '';
+    imageUrl = '';
   }
-  return { success: true, newImageUrl };
+  return { success: true, imageUrl };
 }
 
 async function uploadImage(image: File): Promise<string | false> {
@@ -199,7 +193,7 @@ export async function deletePost(id: string, prevState: FormState | undefined): 
     `;
   } catch (error) {
     console.error(error);
-    return { success: false, message: 'Database Error: failed to delete post.' };
+    return { message: 'Database Error: failed to delete post.' };
   }
 
   revalidatePath('/');

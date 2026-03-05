@@ -2,13 +2,12 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 type ActionState = {
-  success?: boolean,
   message?: string,
 }
 
-export default function useActionErrorToast(state: ActionState | undefined) {
+export default function useActionToast(state?: ActionState) {
   useEffect(() => {
-    if (state?.success === false && state?.message) {
+    if (state?.message) {
       toast.error(state?.message);
     }
   }, [state]);

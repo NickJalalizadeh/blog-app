@@ -20,7 +20,7 @@ export default function ImagePreview({ url, onReplace, onRemove } : ImagePreview
         onClick={onReplace}
       />
       <div className="transition-opacity opacity-0 group-hover:opacity-100">
-        <div className="absolute inset-0 flex items-center justify-center rounded-md text-white bg-black/30  pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center rounded-md text-white bg-black/30 pointer-events-none">
           <Upload className="size-5" />
         </div>
         {/* Remove button */}

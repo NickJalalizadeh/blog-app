@@ -3,12 +3,12 @@
 import { deletePost } from "@/lib/actions";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import useActionErrorToast from "@/hooks/useActionErrorToast";
+import useActionToast from "@/hooks/useActionToast";
 
 export default function DeletePostButton({ id }: { id: string }) {
   const deletePostWithId = deletePost.bind(null, id);
   const [state, formAction, isLoading] = useActionState(deletePostWithId, undefined);
-  useActionErrorToast(state);
+  useActionToast(state);
 
   return (
     <form action={formAction}>

@@ -1,15 +1,16 @@
-export default class BlogImage {
+
+// A class which handles image files which are being processed or prepared for usage by Vercel Blob Storage
+export default class BlobImage {
   url: string = '';
   fileName: string = 'image.jpg';
   
-  private blob?: Blob;
+  private file?: File;
 
-  constructor(image: Blob | string) {
-    if (image instanceof Blob && image.size > 0) {
+  constructor(image: File | string) {
+    if (image instanceof File && image.size > 0) {
       this.url = URL.createObjectURL(image);
-      if (image instanceof File)
-        this.fileName = image.name;
-      this.blob = image;
+      this.fileName = image.name;
+      this.file = image;
     }
     else if (typeof image === 'string') {
       this.url = image;
@@ -17,16 +18,18 @@ export default class BlogImage {
     }
   }
   
-  public getFileList(): FileList | null {
-    if (!this.blob) return null;
-    const file = new File([this.blob], this.fileName, { 
-      type: this.blob.type,
+  // The file list is needed to insert the image into a file picker element
+  public getFileList(fileName = this.fileName): FileList | null {
+    if (!this.file) return null;
+    const file = new File([this.file], fileName, { 
+      type: this.file.type,
     });
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(file);
     return dataTransfer.files;
   }
 
+  // Extracts file name from Vercel Blob urls
   private extractFilenameFromUrl(url: string): string {
     if (url === '') return '';
     const pathname = new URL(url).pathname;

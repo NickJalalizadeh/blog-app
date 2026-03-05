@@ -1,4 +1,4 @@
-import BlogImage from "./BlogImage";
+import BlobImage from "./BlobImage";
 
 export interface Post {
   id: string;
@@ -23,18 +23,17 @@ export interface FormErrors {
   tags?: { errors: string[] };
 };
 
-export interface FormResponse {
+export interface FormState {
+  response?: FormData,
+  errors?: FormErrors,
+  message?: string,
+};
+
+export interface FormValues {
   title: string,
   author: string,
   summary: string,
   content: string,
-  featured_image: BlogImage,
+  featured_image: BlobImage,
   tags: string,
-};
-
-export interface FormState {
-  success: boolean,
-  response?: FormResponse,
-  errors?: FormErrors,
-  message?: string,
 };

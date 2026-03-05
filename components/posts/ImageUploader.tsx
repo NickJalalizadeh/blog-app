@@ -4,11 +4,11 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import BlogImage from '@/types/BlogImage';
+import BlobImage from '@/types/BlobImage';
 import ImagePreview from '@/components/posts/ImagePreview';
 
 type ImageUploaderProps = {
-  image?: BlogImage,
+  image?: BlobImage,
   errors?: string[] | undefined,
 };
 
@@ -27,11 +27,14 @@ export default function ImageUploader({ image, errors } : ImageUploaderProps) {
     isMarkedForDeletion: false,
   });
 
+  // When form is submitted and image changed, populate the file input with the form response
   useEffect(() => {
-    if (!fileInputRef.current) return;
-    if (image?.fileList) {
-      fileInputRef.current.files = image.fileList;
-      selectedFiles.current = image.fileList;
+    if (!fileInputRef.current || !image) return;
+    // file metadata (incl. file name) is lost when passing through server actions, so add it back on the client
+    const files = image.getFileList(imageState.fileName);
+    if (files) {
+      fileInputRef.current.files = files;
+      selectedFiles.current = files;
     }
   }, [image]);
 
@@ -44,7 +47,7 @@ export default function ImageUploader({ image, errors } : ImageUploaderProps) {
     }
     
     // Show preview immediately
-    const previewImage = new BlogImage(file);
+    const previewImage = new BlobImage(file);
     setImageState({
       previewUrl: previewImage.url,
       fileName: previewImage.fileName,

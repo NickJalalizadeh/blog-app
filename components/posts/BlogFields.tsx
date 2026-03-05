@@ -1,4 +1,4 @@
-import { FormErrors, FormResponse } from '@/types/blog';
+import { FormErrors, FormValues } from '@/types/blog';
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +8,7 @@ export default function BlogFields({
   defaultValues,
   errors,
 }: {
-  defaultValues?: FormResponse,
+  defaultValues?: FormValues,
   errors?: FormErrors,
 }) {
   return (
