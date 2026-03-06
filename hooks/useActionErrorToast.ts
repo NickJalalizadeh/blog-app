@@ -5,7 +5,7 @@ type ActionState = {
   message?: string,
 }
 
-export default function useActionToast(state?: ActionState) {
+export default function useActionErrorToast(state?: ActionState) {
   useEffect(() => {
     if (state?.message) {
       toast.error(state?.message);

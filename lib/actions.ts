@@ -100,7 +100,6 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
   const response = formData;
   
   if (!validatedFields.success) {
-    console.log({formData});
     return {
       response: formData,
       errors: z.treeifyError(validatedFields.error).properties,
@@ -109,16 +108,26 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
   }
 
   const { title, featured_image } = validatedFields.data;
+  let newImageUrl = existingImageUrl;
 
-  const result = await replaceOrDeleteImage(featured_image, existingImageUrl, shouldDeleteImage);
-  if (!result.success) {
-    return { response, message: result.message };
+  // Attempt to replace the existing image with a new one
+  if (featured_image.size > 0) {
+    const uploadedUrl = await replaceImage(featured_image, existingImageUrl);
+    if (!uploadedUrl) {
+      return { response, message: 'Database Error: failed to upload image.' };
+    }
+    newImageUrl = uploadedUrl;
+  }
+  // Attempt to delete the existing image if no image was selected to replace it
+  else if (shouldDeleteImage && existingImageUrl) {
+    await deleteImage(existingImageUrl);
+    newImageUrl = '';
   }
 
   const newPost = {
     ...validatedFields.data,
     slug: generateSlug(title),
-    featured_image: result.imageUrl,
+    featured_image: newImageUrl,
     updated_at: new Date(),
   }
 
@@ -137,28 +146,15 @@ export async function updatePost(id: string, existingImageUrl: string, prevState
   redirect(`/posts/${getSlugId(newPost.slug, id)}`);
 }
 
-async function replaceOrDeleteImage(newImage: File, existingImageUrl: string, shouldDeleteImage: boolean) {
-  let imageUrl: string = existingImageUrl;
-
-  if (newImage.size > 0) {
-    // Delete old image if we're replacing it with a new image
-    if (existingImageUrl) {
-      await deleteImage(existingImageUrl);
-      // If fails, continue anyway - better to have orphaned file than fail the update
-    }
-
-    const uploadedUrl = await uploadImage(newImage);
-    if (!uploadedUrl)
-      return { success: false, message: 'Database Error: failed to upload image.' };
-
-    imageUrl = uploadedUrl;
-  }
-  else if (shouldDeleteImage && existingImageUrl) {
-    // Existing image should be deleted and no new image was uploaded to replace it
+async function replaceImage(newImage: File, existingImageUrl: string): Promise<string | false> {
+  // Delete old image if we're replacing it with a new image
+  if (existingImageUrl) {
     await deleteImage(existingImageUrl);
-    imageUrl = '';
+    // If fails, continue anyway - better to have orphaned file than fail the update
   }
-  return { success: true, imageUrl };
+
+  const uploadedUrl = await uploadImage(newImage);
+  return uploadedUrl;
 }
 
 async function uploadImage(image: File): Promise<string | false> {

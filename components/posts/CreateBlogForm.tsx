@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { useActionState } from 'react';
 import BlogFields from './BlogFields';
 import Link from 'next/link';
-import useActionToast from '@/hooks/useActionToast';
+import useActionErrorToast from '@/hooks/useActionErrorToast';
 import { getFormValues } from '@/lib/utils';
 
 export default function CreateBlogForm() {
   const [state, formAction, isLoading] = useActionState(createPost, {});
-  useActionToast(state);
+  useActionErrorToast(state);
 
   const formValues = state?.response && getFormValues(state.response);
 

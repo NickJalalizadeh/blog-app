@@ -7,12 +7,12 @@ import { useActionState } from 'react';
 import BlogFields from './BlogFields';
 import Link from 'next/link';
 import { getFormValues, getFormValuesFromPost, getSlugId } from '@/lib/utils';
-import useActionToast from '@/hooks/useActionToast';
+import useActionErrorToast from '@/hooks/useActionErrorToast';
 
 export default function EditBlogForm({ post }: { post: Post }) {
   const updatePostWithId = updatePost.bind(null, post.id, post.featured_image);
   const [state, formAction, isLoading] = useActionState(updatePostWithId, {});
-  useActionToast(state);
+  useActionErrorToast(state);
 
   const formValues = state?.response? getFormValues(state.response, post.featured_image) : getFormValuesFromPost(post);
   
