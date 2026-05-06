@@ -55,7 +55,7 @@ export async function createPost(prevState: FormState | undefined, formData: For
   const { title, featured_image } = validatedFields.data;
   let featuredImageUrl: string = '';
 
-  if (featured_image && featured_image.size > 0) {
+  if (featured_image.size > 0) {
     const uploadedUrl = await uploadImage(featured_image);
     if (!uploadedUrl) {
       return { response, message: 'Database Error: failed to upload image.' };
