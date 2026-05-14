@@ -8,20 +8,7 @@ import { Search, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group';
 import { Field, FieldDescription } from './ui/field';
-
-function normalize(s: string) {
-  return s.toLowerCase().trim();
-}
-
-function matchesQuery(post: Post, query: string): boolean {
-  const queryNormal = normalize(query);
-  return (
-    normalize(post.title).includes(queryNormal) ||
-    normalize(post.author).includes(queryNormal) ||
-    normalize(post.summary).includes(queryNormal) ||
-    normalize(post.tags ?? '').includes(queryNormal)
-  );
-}
+import { normalize, matchesQuery } from '@/lib/utils';
 
 export default function PostsGrid({ posts }: { posts: Post[] }) {
   const [query, setQuery] = useState('');
@@ -37,7 +24,7 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
   return (
     <>
       {/* Search bar */}
-      <Field className="mb-12 max-w-lg">
+      <Field className="mb-12 max-w-lg relative">
         <InputGroup>
           <InputGroupAddon>
             <Search />
@@ -58,7 +45,7 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
         </InputGroup>
 
         {hasQuery && filteredPosts.length > 0 && (
-          <FieldDescription>
+          <FieldDescription className="absolute -bottom-6">
             {filteredPosts.length} post{filteredPosts.length === 1 ? '' : 's'} found
           </FieldDescription>
         )}

@@ -1,16 +1,13 @@
 import { Post } from "@/types/blog"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import Image from "next/image";
-import { formatDate, getSlugId } from "@/lib/utils"
-import DeletePostButton from "./DeletePostButton";
+import { formatDate } from "@/lib/utils"
 
 const BlogPost = ({ post }: { post: Post }) => {
   return (
     <article>
       {/* Featured Image */}
       {post.featured_image && (
-        <div className="aspect-[21/9] overflow-hidden rounded-lg mb-8">
+        <div className="aspect-21/9 overflow-hidden rounded-lg mb-8">
           <Image 
             src={post.featured_image} 
             className="w-full h-full object-cover"
@@ -44,22 +41,8 @@ const BlogPost = ({ post }: { post: Post }) => {
       <div className="border-t border-border/40 my-12"></div>
 
       {/* Content */}
-      <div className="prose prose-lg max-w-none">
-        <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed">
-          {post.content}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="border-t border-border/40 mt-16 pt-8">
-        <div className="flex justify-between gap-4">
-          <Button asChild>
-            <Link href={`/posts/${getSlugId(post.slug, post.id)}/edit`}>
-              Edit Post
-            </Link>
-          </Button>
-          <DeletePostButton id={post.id} />
-        </div>
+      <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed">
+        {post.content}
       </div>
     </article>
   )

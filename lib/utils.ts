@@ -63,3 +63,17 @@ export function getFormValuesFromPost(post: Post): FormValues {
     featured_image: new BlobImage(post.featured_image),
   }
 }
+
+export function normalize(s: string) {
+  return s.toLowerCase().trim();
+}
+
+export function matchesQuery(post: Post, query: string): boolean {
+  const qNorm = normalize(query);
+  return (
+    normalize(post.title).includes(qNorm) ||
+    normalize(post.author).includes(qNorm) ||
+    normalize(post.summary).includes(qNorm) ||
+    normalize(post.tags ?? '').includes(qNorm)
+  );
+}

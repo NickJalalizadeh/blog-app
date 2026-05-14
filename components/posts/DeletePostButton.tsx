@@ -5,14 +5,14 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import useActionErrorToast from "@/hooks/useActionErrorToast";
 
-export default function DeletePostButton({ id }: { id: string }) {
+export default function DeletePostButton({ id, className }: { id: string, className?: string }) {
   const deletePostWithId = deletePost.bind(null, id);
   const [state, formAction, isLoading] = useActionState(deletePostWithId, undefined);
   useActionErrorToast(state);
 
   return (
     <form action={formAction}>
-      <Button type="submit" variant="destructive" disabled={isLoading}>
+      <Button type="submit" variant="destructive" disabled={isLoading} className={className}>
         Delete Post
       </Button>
     </form>
