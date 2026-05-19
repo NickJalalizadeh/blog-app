@@ -184,7 +184,7 @@ async function deleteImage(imageUrl: string): Promise<boolean> {
 export async function deletePost(id: string, prevState: FormState | undefined): Promise<FormState> {
   try {
     await sql`
-      SELECT count(1) FROM posts 
+      DELETE FROM posts
       WHERE id = ${id}
     `;
   } catch (error) {
