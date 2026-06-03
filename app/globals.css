@@ -122,4 +122,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Prevents layout shift due to the presence and absence of the scrollbar */
+  .container {
+    position: relative;
+    left: calc((100vw - 100%) / 2);
+  }
+}
+
+@layer components {
+  .posts-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  }
 }

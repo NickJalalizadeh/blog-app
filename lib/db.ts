@@ -11,11 +11,33 @@ export async function getPosts(): Promise<Post[]> {
     const rows = await sql<Post[]>`
       SELECT * FROM posts 
       ORDER BY published_at DESC
+      LIMIT 50
     `;
     return rows;
   } catch (error) {
     console.error('Failed to fetch posts:', error);
-    return [];
+    throw error;
+  }
+}
+
+// Fetch posts by query string
+export async function getPostsByQuery(query: string): Promise<Post[]> {
+  try {
+    const pattern = `%${query}%`;
+    const rows = await sql<Post[]>`
+      SELECT * FROM posts
+      WHERE
+        title    ILIKE ${pattern} OR
+        author   ILIKE ${pattern} OR
+        summary  ILIKE ${pattern} OR
+        tags     ILIKE ${pattern}
+      ORDER BY published_at DESC9090
+      LIMIT 50
+    `;
+    return rows;
+  } catch (error) {
+    console.error('Failed to search posts:', error);
+    throw error;
   }
 }
 
