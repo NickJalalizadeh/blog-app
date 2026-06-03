@@ -3,7 +3,7 @@ import { use } from "react";
 import { Button } from "./ui/button";
 import BlogCard from "./BlogCard";
 
-export default function PostsResults({ postsPromise, query, onClear, hasError }: {
+export default function SearchResults({ postsPromise, query, onClear, hasError }: {
   postsPromise: Promise<Post[]>;
   query: string;
   onClear: () => void;
@@ -16,14 +16,12 @@ export default function PostsResults({ postsPromise, query, onClear, hasError }:
       <div className="text-center py-16">
         <p className="text-muted-foreground text-lg mb-4">
           {hasError? (
-            <>There was an error searching for posts. Please try again.</>
+            <>There was an error searching for posts. Please try again later.</>
           ) : (
-            <>No posts have been found matching the search: <span className="text-foreground">{query}</span></>
+            <>No posts have been found matching the search <span className="text-foreground">{query}</span></>
           )}
         </p>
-        <Button variant="link" onClick={onClear}>
-          Clear search
-        </Button>
+        <Button variant="ghost" onClick={onClear}>Clear search</Button>
       </div>
     );
   }

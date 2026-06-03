@@ -20,7 +20,7 @@ export default function SearchBar({ query, onSearch, onClear }: {
         <InputGroupInput
           value={query}
           onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search by title, author, or topic..."
+          placeholder="Search posts by keywords..."
           aria-label="Search posts"
         />
         {hasQuery && (

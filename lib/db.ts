@@ -31,7 +31,7 @@ export async function getPostsByQuery(query: string): Promise<Post[]> {
         author   ILIKE ${pattern} OR
         summary  ILIKE ${pattern} OR
         tags     ILIKE ${pattern}
-      ORDER BY published_at DESC9090
+      ORDER BY published_at DESC
       LIMIT 50
     `;
     return rows;

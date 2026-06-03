@@ -5,10 +5,11 @@ import { Post } from '@/types/blog';
 import BlogCard from '@/components/BlogCard';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { normalize, debounce } from '@/lib/utils';
+import { normalize } from '@/lib/utils';
 import BlogCardSkeleton from './BlogCardSkeleton';
-import PostsResults from './PostsResults';
+import SearchResults from './SearchResults';
 import SearchBar from './SearchBar';
+import useDebounce from '@/hooks/useDebounce';
 
 function SkeletonGrid() {
   return (
@@ -30,28 +31,27 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
   const [searchStatus, setSearchStatus] = useState<SearchStatusType>({state: 'idle'});
   const abortRef = useRef<AbortController>(null);
 
-  const searchPosts = useRef(
-    debounce(async (query: string, signal: AbortSignal) => {
-      if (!normalize(query)) {
-        setSearchStatus({state: 'idle'});
-        return;
-      }
+  const searchPosts = useDebounce(async (query: string, signal: AbortSignal) => {
+    if (!normalize(query)) {
+      setSearchStatus({state: 'idle'});
+      return;
+    }
 
-      const encodedQuery = encodeURIComponent(normalize(query));
-      const promise = fetch(`/api/posts/search?q=${encodedQuery}`, { signal })
-        .then((result) => {
-          return result.json();
-        })
-        .catch((error) => {
-          if ((error as Error).name === 'AbortError') {
-            return new Promise<Post[]>(() => {});
-          }
-          setSearchStatus({state: 'error', promise});
-        });
+    const encodedQuery = encodeURIComponent(normalize(query));
+    const promise = fetch(`/api/posts/search?q=${encodedQuery}`, { signal })
+      .then((result) => {
+        return result.json();
+      })
+      .catch((error) => {
+        if ((error as Error).name === 'AbortError') {
+          // If aborted, keep loading state visible until fetch is resolved
+          return new Promise<Post[]>(() => {});
+        }
+        setSearchStatus({state: 'error', promise});
+      });
 
-        setSearchStatus({state: 'active', promise});
-    }, 400)
-  ).current;
+      setSearchStatus({state: 'active', promise});
+  }, 400);
 
   const handleSearch = (queryValue: string) => {
     abortRef.current?.abort();
@@ -80,14 +80,16 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
       <SearchBar query={query} onSearch={handleSearch} onClear={() => handleSearch('')} />
 
       {searchStatus.state === 'idle' ? (
+        // No active search, show default posts grid
         <div className="posts-grid">
           {posts.map((post) => (
             <BlogCard key={post.id} post={post} />
           ))}
         </div>
       ) : searchStatus.promise ? (
+        // Debounce finished but fetch in progess, show fallback Skeleton Grid
         <Suspense fallback={<SkeletonGrid />}>
-          <PostsResults
+          <SearchResults
             postsPromise={searchStatus.promise}
             query={query}
             onClear={() => handleSearch('')}
@@ -95,6 +97,7 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
           />
         </Suspense>
       ) : (
+        // Debounce fired, show Skeleton Grid
         <SkeletonGrid />
       )}
     </>

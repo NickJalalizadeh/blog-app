@@ -77,15 +77,3 @@ export function matchesQuery(post: Post, query: string): boolean {
     normalize(post.tags ?? '').includes(qNorm)
   );
 }
-
-// Debounce function to limit the rate of function calls
-export function debounce<T extends unknown[]>(
-  func: (...args: T) => unknown,
-  delay: number
-): (...args: T) => void {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return (...args: T) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-}
