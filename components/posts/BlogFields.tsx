@@ -14,7 +14,7 @@ export default function BlogFields({
   return (
     <FieldGroup>
       <FieldSet>
-        <FieldLegend>Header</FieldLegend>
+        <FieldLegend>Heading</FieldLegend>
         <FieldDescription>Info that appears at the top of your post</FieldDescription>
         <FieldGroup>
           <div className="grid grid-cols-2 gap-4">
@@ -68,16 +68,16 @@ export default function BlogFields({
       <FieldSeparator />
 
       <FieldSet>
-        <FieldLegend>Content & Metadata</FieldLegend>
+        <FieldLegend>Body</FieldLegend>
+        <FieldDescription>The main content of your post</FieldDescription>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="content">Post Content</FieldLabel>
             <Textarea
               id="content"
               name="content"
+              className="min-h-80"
               defaultValue={defaultValues?.content}
               placeholder="Write your blog post content here..."
-              rows={12}
               autoComplete="off"
               aria-invalid={!!errors?.content?.errors?.length}
             />

@@ -28,7 +28,7 @@ export default function SearchResults({ postsPromise, query, onClear, hasError }
 
   return (
     <div className="relative">
-      <p className="absolute text-muted-foreground text-sm -top-7">
+      <p className="absolute text-muted-foreground text-sm -top-6">
         {posts.length} post{posts.length === 1 ? '' : 's'} found
       </p>
       <div className="posts-grid">

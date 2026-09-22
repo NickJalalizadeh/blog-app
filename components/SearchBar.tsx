@@ -12,7 +12,7 @@ export default function SearchBar({ query, onSearch, onClear }: {
   const hasQuery = normalize(query).length > 0;
 
   return (
-    <Field className="mb-12 max-w-lg relative">
+    <Field className="mb-8 max-w-lg relative">
       <InputGroup>
         <InputGroupAddon>
           <Search />

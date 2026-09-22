@@ -29,7 +29,7 @@ export default function DeletePostButton({ id, className }: { id: string, classN
             This will permanently delete the post and cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-4">
+        <AlertDialogFooter className="mt-4 sm:justify-between">
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogAction variant="destructive" disabled={isLoading} onClick={handleDelete}>Delete</AlertDialogAction>
         </AlertDialogFooter>
