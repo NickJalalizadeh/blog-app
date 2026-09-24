@@ -14,6 +14,14 @@ export interface Post {
   updated_at: Date;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password_hash: string;
+  created_at: Date;
+}
+
 export interface FormErrors {
   title?: { errors: string[] };
   author?: { errors: string[] };

@@ -17,6 +17,14 @@ CREATE TABLE IF NOT EXISTS posts (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS users (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create an index on slug for faster lookups
 CREATE INDEX IF NOT EXISTS idx_posts_short_id ON posts(short_id);
 

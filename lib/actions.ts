@@ -195,3 +195,19 @@ export async function deletePost(id: string, prevState: FormState | undefined): 
   revalidatePath('/');
   redirect('/');
 }
+
+export async function createUser(name: string, email: string, password_hash: string): Promise<boolean> {
+  const newUser = {
+    name,
+    email,
+    password_hash,
+  };
+
+  try {
+    await sql`INSERT INTO users ${sql(newUser)}`;
+    return true;
+  } catch(error) {
+    console.error(error);
+    throw error;
+  }
+}

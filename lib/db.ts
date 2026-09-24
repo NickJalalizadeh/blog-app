@@ -1,4 +1,4 @@
-import { Post } from '@/types/blog';
+import { Post, User } from '@/types/blog';
 import postgres from 'postgres';
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -68,5 +68,17 @@ export async function getPostById(id: string): Promise<Post | null> {
   } catch (error) {
     console.error('Failed to fetch post:', error);
     return null;
+  }
+}
+
+export async function getUser(email: string): Promise<User | null> {
+  try {
+    const rows = await sql<User[]>`
+      SELECT id, name, email, password_hash FROM users WHERE email = ${email}
+    `;
+    return rows[0] || null;
+  } catch(error) {
+    console.error('Failed to get user:', error);
+    throw error;
   }
 }

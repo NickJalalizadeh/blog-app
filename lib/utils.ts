@@ -77,3 +77,24 @@ export function matchesQuery(post: Post, query: string): boolean {
     normalize(post.tags ?? '').includes(qNorm)
   );
 }
+
+export function toSafeCallbackUrl(raw: string | null): string {
+  if (!raw)
+    return "/";
+
+  try {
+    // Parse against a fixed dummy origin — this works whether `raw`
+    // is relative ("/dashboard") or absolute ("https://.../dashboard").
+    // Critically, we NEVER read back url.origin/url.host below —
+    // we only keep the path, so any host embedded in `raw`
+    // (legitimate or attacker-supplied) is discarded entirely.
+    const url = new URL(raw, "http://localhost");
+
+    if (!url.pathname.startsWith("/"))
+      return "/";
+
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return "/";
+  }
+}
