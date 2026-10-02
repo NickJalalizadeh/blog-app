@@ -6,10 +6,11 @@ import { login } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError } from "@/components/ui/field";
 import { useSearchParams } from "next/navigation";
 import { toSafeCallbackUrl } from "@/lib/utils";
+import Link from "next/link";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -24,7 +25,6 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = toSafeCallbackUrl(searchParams.get("callbackUrl"));
   const [errorMessage, formAction] = useActionState(login, undefined);
-  console.log({callbackUrl});
 
   return (
     <Card className="max-w-sm mx-auto mt-20">
@@ -50,6 +50,14 @@ function LoginForm() {
           <SubmitButton />
         </form>
       </CardContent>
+      <CardFooter>
+        <p className="text-sm">
+          New to The Chronicle?
+          <Button variant="link" size="sm" className="h-auto p-0 ml-1 align-baseline" asChild>
+            <Link href="/register">Create an account</Link>
+          </Button>
+        </p>
+      </CardFooter>
     </Card>
   );
 }

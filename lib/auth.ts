@@ -13,10 +13,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { email, password } = credentials as { email: string; password: string };
 
         const user = await getUser(email);
-        if (!user) return null;
+        if (!user)
+          return null;
 
         const isValid = await bcrypt.compare(password, user.password_hash);
-        if (!isValid) return null;
+        if (!isValid)
+          return null;
 
         return { id: user.id, name: user.name, email: user.email };
       },
@@ -28,11 +30,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return !!auth;
     },
     jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user)
+        token.id = user.id;
       return token;
     },
     session({ session, token }) {
-      if (session.user) session.user.id = token.id as string;
+      if (session.user)
+        session.user.id = token.id as string;
       return session;
     }
   },

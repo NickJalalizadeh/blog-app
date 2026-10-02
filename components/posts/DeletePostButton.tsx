@@ -1,6 +1,6 @@
 'use client';
 
-import { deletePost } from "@/lib/actions";
+import { deletePost } from "@/lib/posts/actions";
 import { startTransition, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import useActionErrorToast from "@/hooks/useActionErrorToast";

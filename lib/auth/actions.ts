@@ -10,12 +10,13 @@ import { getUser } from "@/lib/db";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-// ---------- Registration ----------
-
 const RegisterSchema = z.object({
-  name: z.string().min(5, "Name must be at least 5 characters."),
+  name: z.string().min(4, "Name must be at least 4 characters"),
   email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .max(28, "Password must be less than 28 characters"),
+  confirmPassword: z.string(),
 });
 
 export type RegisterState = {
@@ -23,6 +24,7 @@ export type RegisterState = {
     name?: { errors: string[]; };
     email?: { errors: string[]; };
     password?: { errors: string[]; };
+    confirmPassword?: { errors: string[]; };
   };
 };
 
@@ -31,18 +33,21 @@ export async function register(prevState: RegisterState, formData: FormData): Pr
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
   });
 
   if (!validatedFields.success) {
     return { errors: z.treeifyError(validatedFields.error).properties };
   }
 
-  const { name, email, password} = validatedFields.data;
+  const { name, email, password, confirmPassword} = validatedFields.data;
+
+  if (password !== confirmPassword)
+    return { errors: { password: { errors: ["The passwords do not match"] }, confirmPassword: { errors: ["The passwords do not match"] }}};
 
   const existingUser = await getUser(email);
-  if (existingUser) {
-    return { errors: { email: { errors: ["Email already registered"] } } };
-  }
+  if (existingUser)
+    return { errors: { email: { errors: ["Email already registered"] }}};
 
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -53,12 +58,10 @@ export async function register(prevState: RegisterState, formData: FormData): Pr
   `;
 
   // Optional: auto sign-in right after registration instead of redirecting to /login
-  // await signIn("credentials", { email, password, redirect: false });
+  await signIn("credentials", { email, password, redirect: false });
 
-  redirect("/login");
+  redirect("/");
 }
-
-// ---------- Login ----------
 
 export async function login(prevState: string | undefined, formData: FormData): Promise<string | undefined> {
   try {

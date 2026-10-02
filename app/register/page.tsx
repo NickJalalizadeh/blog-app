@@ -5,8 +5,9 @@ import { useFormStatus } from "react-dom";
 import { register, RegisterState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import Link from "next/link";
 
 const initialState: RegisterState = {};
 
@@ -47,9 +48,23 @@ export default function RegisterPage() {
             {state.errors?.password?.errors.map(e => <FieldError key={e}>{e}</FieldError>)}
           </Field>
 
+          <Field>
+            <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+            <Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" />
+            {state.errors?.confirmPassword?.errors.map(e => <FieldError key={e}>{e}</FieldError>)}
+          </Field>
+
           <SubmitButton />
         </form>
       </CardContent>
+      <CardFooter>
+        <p className="text-sm">
+          Already have an account?
+          <Button variant="link" size="sm" className="h-auto p-0 ml-1 align-baseline" asChild>
+            <Link href="/login">Log in</Link>
+          </Button>
+        </p>
+      </CardFooter>
     </Card>
   );
 }

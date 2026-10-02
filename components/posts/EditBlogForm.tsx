@@ -1,7 +1,7 @@
 'use client';
 
 import { Post } from '@/types/blog';
-import { updatePost } from '@/lib/actions';
+import { updatePost } from '@/lib/posts/actions';
 import { Button } from '@/components/ui/button';
 import { useActionState } from 'react';
 import BlogFields from './BlogFields';
